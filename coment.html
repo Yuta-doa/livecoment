@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube LIVE Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    .chat-container {
+      width: 300px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .chat-log {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 5px;
+      margin-bottom: 10px;
+    }
+    .chat-input {
+      width: calc(100% - 60px);
+      padding: 5px;
+    }
+    .chat-send {
+      width: 50px;
+      padding: 5px;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+  <script>
+    // Firebaseの設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Firebaseの初期化
+    firebase.initializeApp(firebaseConfig);
+
+    const database = firebase.database();
+
+    function sendMessage() {
+      const chatLog = document.getElementById('chatLog');
+      const chatInput = document.getElementById('chatInput');
+      const message = chatInput.value;
+
+      if (message.trim() !== '') {
+        const newMessageRef = database.ref('messages').push();
+        newMessageRef.set({
+          text: message,
+          timestamp: Date.now()
+        });
+        chatInput.value = '';
+      }
+    }
+
+    database.ref('messages').on('child_added', (snapshot) => {
+      const chatLog = document.getElementById('chatLog');
+      const newMessage = document.createElement('div');
+      newMessage.textContent = snapshot.val().text;
+      chatLog.appendChild(newMessage);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
+  </script>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-log" id="chatLog"></div>
+    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージを入力">
+    <button class="chat-send" onclick="sendMessage()">送信</button>
+  </div>
+</body>
+</html>
